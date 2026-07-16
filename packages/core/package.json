@@ -1,0 +1,23 @@
+{
+  "name": "@skipthevoice/core",
+  "version": "0.1.0",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": { "types": "./dist/index.d.ts", "import": "./dist/index.js" },
+    "./*": { "types": "./dist/*.d.ts", "import": "./dist/*.js" }
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json && mkdir -p dist/database && cp src/database/schema.sql dist/database/schema.sql",
+    "clean": "node -e \"require('node:fs').rmSync('dist',{recursive:true,force:true})\""
+  },
+  "dependencies": {
+    "@whiskeysockets/baileys": "7.0.0-rc13",
+    "better-sqlite3": "12.11.1",
+    "drizzle-orm": "0.45.2",
+    "file-type": "21.3.4",
+    "pino": "9.7.0",
+    "zod": "4.0.14"
+  }
+}

@@ -1,0 +1,1 @@
+import{expect,it}from"vitest";import{maskSecret}from"./logger.js";it("masks secrets while retaining a diagnostic suffix",()=>{expect(maskSecret("abcdefghijkl")).toBe("••••••••••••ijkl");expect(maskSecret("")).toBe("(not configured)")});

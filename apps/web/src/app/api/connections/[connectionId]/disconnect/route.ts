@@ -1,0 +1,1 @@
+import{application,apiError,assertCsrf,webContext}from"@/lib/api";export async function POST(request:Request,{params}:{params:Promise<{connectionId:string}>}){try{await assertCsrf(request);const id=(await params).connectionId;await application().disconnect(await webContext(),id);return Response.json({status:"disconnected",id})}catch(error){return apiError(error)}}

@@ -1,0 +1,5 @@
+fastapi==0.139.1
+uvicorn==0.51.0
+python-multipart==0.0.32
+pydantic==2.13.4
+openai-whisper==20250625

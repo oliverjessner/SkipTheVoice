@@ -1,0 +1,37 @@
+import { existsSync } from "node:fs";
+import type { ApplicationContext } from "./context.js";
+import { getDatabase, initializeDatabaseSchema } from "./database/connection.js";
+import { Repositories } from "./database/repositories.js";
+import { AudioStorage } from "./audio/storage.js";
+import { TranscriptionService } from "./transcription/service.js";
+import { SelfHostedWhisperProvider } from "./transcription/whisper-provider.js";
+import { generateMarkdown, localIsoTimestamp, markdownFilename } from "./export/markdown.js";
+import { AppError } from "./errors.js";
+import { WhatsAppBaileysProvider } from "./messenger/whatsapp-baileys.js";
+import { RetentionService } from "./retention/service.js";
+import { getConfig } from "./config.js";
+
+export class SkipTheVoiceApplication {
+  private readonly resumingConnections=new Set<string>();
+  readonly repositories: Repositories; readonly audioStorage=new AudioStorage(); readonly transcriptions: TranscriptionService; readonly whisper=new SelfHostedWhisperProvider(); readonly whatsapp:WhatsAppBaileysProvider;readonly retention:RetentionService;
+  constructor(){ const database=getDatabase(); initializeDatabaseSchema(database.sqlite);const config=getConfig();if(config.nodeEnv!=="production"){const timestamp=new Date().toISOString();database.sqlite.prepare("INSERT OR IGNORE INTO users(id,email,name,created_at,updated_at) VALUES(?,?,?,?,?)").run(config.defaultUserId,null,"Local developer",timestamp,timestamp)} this.repositories=new Repositories(database.sqlite); this.transcriptions=new TranscriptionService(this.repositories); this.whatsapp=new WhatsAppBaileysProvider(this.repositories,this.audioStorage);this.retention=new RetentionService(this.repositories); }
+  context(userId:string):ApplicationContext { this.repositories.assertKnownUser(userId); return {userId}; }
+  listConnections(context:ApplicationContext){ return this.repositories.listConnections(context); }
+  addConnection(context:ApplicationContext,provider:string,displayName:string){ if(provider!=="whatsapp") throw new AppError("VALIDATION_ERROR","Only WhatsApp is supported in this MVP."); return this.repositories.addConnection(context,provider,displayName); }
+  connect(context:ApplicationContext,connectionId:string,options?:Parameters<WhatsAppBaileysProvider["connect"]>[2]){ return this.whatsapp.connect(context,connectionId,options); }
+  async resumeMessengerConnections(context:ApplicationContext):Promise<void>{const connections=this.listConnections(context) as any[];for(const connection of connections){if(["disconnected","error"].includes(connection.status)||this.whatsapp.hasActiveSocket(connection.id)||this.resumingConnections.has(connection.id))continue;this.resumingConnections.add(connection.id);try{await this.whatsapp.connect(context,connection.id)}catch(error){this.repositories.updateConnection(context,connection.id,{status:"reconnecting",lastErrorCode:"CONNECTION_FAILED",lastErrorMessage:error instanceof Error?error.message:"WhatsApp reconnection failed."})}finally{this.resumingConnections.delete(connection.id)}}}
+  disconnect(context:ApplicationContext,connectionId:string){ return this.whatsapp.disconnect(context,connectionId); }
+  sync(context:ApplicationContext,connectionId:string){ return this.whatsapp.syncVoiceMessages(context,connectionId); }
+  async removeConnection(context:ApplicationContext,connectionId:string,deleteData=false){this.repositories.assertOwns("messenger_connections",context.userId,connectionId);await this.disconnect(context,connectionId).catch(()=>undefined);await this.whatsapp.removeCredentials(context,connectionId);if(deleteData){const messages=this.listVoiceMessages(context,{connectionId,limit:100}) as any[];for(const message of messages)await this.audioStorage.deleteMessageFiles(context.userId,connectionId,message.id);this.repositories.sqlite.prepare("DELETE FROM messenger_connections WHERE id=? AND user_id=?").run(connectionId,context.userId);}else{const timestamp=new Date().toISOString();this.repositories.sqlite.prepare("INSERT INTO application_settings(id,user_id,key,value,created_at,updated_at) VALUES(?,?,?,?,?,?) ON CONFLICT(user_id,key) DO UPDATE SET value=excluded.value,updated_at=excluded.updated_at").run(`removed_${connectionId}`,context.userId,`removed_connection:${connectionId}`,"true",timestamp,timestamp);}return{removed:true,connectionId,deletedData:deleteData};}
+  listConversations(context:ApplicationContext,search?:string){ return this.repositories.listConversations(context,search); }
+  listContacts(context:ApplicationContext,search?:string){ return this.repositories.listContacts(context,search); }
+  listVoiceMessages(context:ApplicationContext,filters:Parameters<Repositories["listVoiceMessages"]>[1]={}){ return this.repositories.listVoiceMessages(context,filters); }
+  setVoiceMessageName(context:ApplicationContext,voiceMessageId:string,name:string|null){ return this.repositories.setVoiceMessageName(context,voiceMessageId,name); }
+  startTranscription(context:ApplicationContext,voiceMessageId:string,options?:{language?:string;model?:string}){ return this.transcriptions.start(context,voiceMessageId,options); }
+  async cancelTranscription(context:ApplicationContext,jobId:string){ const job=this.repositories.getJob(context,jobId); if(job.externalJobId) await this.whisper.cancelJob(job.externalJobId).catch(()=>undefined); return this.transcriptions.cancel(context,jobId); }
+  retryTranscription(context:ApplicationContext,jobId:string){ return this.transcriptions.retry(context,jobId); }
+  getJob(context:ApplicationContext,jobId:string){ return this.repositories.getJob(context,jobId); }
+  exportMarkdown(context:ApplicationContext,voiceMessageId:string){ this.repositories.getVoiceMessage(context,voiceMessageId); const row=this.repositories.sqlite.prepare(`SELECT v.id,v.sender_display_name sender,v.sent_at date,v.duration_seconds durationSeconds,c.display_name conversation,mc.provider,t.detected_language language,t.provider engine,t.model,t.text FROM voice_messages v JOIN conversations c ON c.id=v.conversation_id JOIN messenger_connections mc ON mc.id=v.connection_id JOIN transcriptions t ON t.voice_message_id=v.id WHERE v.id=? AND v.user_id=? ORDER BY t.created_at DESC LIMIT 1`).get(voiceMessageId,context.userId) as any; if(!row) throw new AppError("VALIDATION_ERROR","A completed transcript is required for Markdown export.",409); return {filename:markdownFilename(row.date,row.sender),content:generateMarkdown({id:row.id,sender:row.sender,conversation:row.conversation,messenger:row.provider,date:localIsoTimestamp(row.date),durationSeconds:row.durationSeconds,language:row.language,engine:row.engine==="self_hosted_whisper"?"openai-whisper":row.engine,model:row.model,text:row.text})}; }
+  audio(context:ApplicationContext,voiceMessageId:string){ const message=this.repositories.getVoiceMessage(context,voiceMessageId); if(!message.local_file_path||!existsSync(message.local_file_path)) throw new AppError("AUDIO_FILE_MISSING","The audio file is unavailable.",404); return {path:message.local_file_path,mimeType:message.mime_type,size:message.file_size,filename:`${voiceMessageId}.${message.file_extension}`}; }
+  async deleteVoiceMessage(context:ApplicationContext,voiceMessageId:string){ const message=this.repositories.deleteVoiceMessage(context,voiceMessageId); await this.audioStorage.deleteMessageFiles(context.userId,message.connection_id,voiceMessageId); return {deleted:true,id:voiceMessageId}; }
+}

@@ -1,0 +1,49 @@
+services:
+  app:
+    build: .
+    environment:
+      DATABASE_URL: file:/app/data/database/skipthevoice.db
+      DATA_DIRECTORY: /app/data
+      AUDIO_DIRECTORY: /app/data/audio
+      MESSENGER_CREDENTIALS_DIRECTORY: /app/data/credentials
+      EXPORT_DIRECTORY: /app/data/exports
+      WHISPER_WORKER_URL: http://whisper-worker:8090
+      WHISPER_WORKER_INTERNAL_TOKEN: ${WHISPER_WORKER_INTERNAL_TOKEN:-change-me}
+    volumes: ["skipthevoice-data:/app/data"]
+    ports: ["3000:3000"]
+    depends_on:
+      whisper-worker: { condition: service_healthy }
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://localhost:3000/api/health').then(r=>{if(!r.ok)process.exit(1)})"]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+  job-runner:
+    build: .
+    command: ["npm", "run", "start:worker"]
+    environment:
+      DATABASE_URL: file:/app/data/database/skipthevoice.db
+      DATA_DIRECTORY: /app/data
+      WHISPER_WORKER_URL: http://whisper-worker:8090
+      WHISPER_WORKER_INTERNAL_TOKEN: ${WHISPER_WORKER_INTERNAL_TOKEN:-change-me}
+    volumes: ["skipthevoice-data:/app/data"]
+    depends_on:
+      whisper-worker: { condition: service_healthy }
+  whisper-worker:
+    build:
+      context: .
+      dockerfile: apps/whisper-worker/Dockerfile
+    environment:
+      WHISPER_WORKER_INTERNAL_TOKEN: ${WHISPER_WORKER_INTERNAL_TOKEN:-change-me}
+      WHISPER_MODEL: ${WHISPER_MODEL:-turbo}
+      WHISPER_DEVICE: ${WHISPER_DEVICE:-cpu}
+      WHISPER_MAX_CONCURRENT_JOBS: ${WHISPER_MAX_CONCURRENT_JOBS:-1}
+    volumes: ["whisper-cache:/root/.cache/whisper"]
+    healthcheck:
+      test: ["CMD", "python", "-c", "import os,urllib.request; r=urllib.request.Request('http://localhost:8090/health',headers={'Authorization':'Bearer '+os.getenv('WHISPER_WORKER_INTERNAL_TOKEN','change-me')}); urllib.request.urlopen(r)"]
+      interval: 15s
+      timeout: 5s
+      retries: 20
+volumes:
+  skipthevoice-data:
+  whisper-cache:

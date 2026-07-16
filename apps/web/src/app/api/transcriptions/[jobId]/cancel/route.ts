@@ -1,0 +1,1 @@
+import{application,apiError,assertCsrf,webContext}from"@/lib/api";export async function POST(request:Request,{params}:{params:Promise<{jobId:string}>}){try{await assertCsrf(request);return Response.json(await application().cancelTranscription(await webContext(),(await params).jobId))}catch(error){return apiError(error)}}

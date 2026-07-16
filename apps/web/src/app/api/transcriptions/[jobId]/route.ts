@@ -1,0 +1,1 @@
+import{application,apiError,webContext}from"@/lib/api";export const dynamic="force-dynamic";export async function GET(_:Request,{params}:{params:Promise<{jobId:string}>}){try{return Response.json(application().getJob(await webContext(),(await params).jobId))}catch(error){return apiError(error)}}

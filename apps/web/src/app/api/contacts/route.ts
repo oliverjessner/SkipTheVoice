@@ -1,0 +1,1 @@
+import {application,apiError,webContext}from"@/lib/api";export const dynamic="force-dynamic";export async function GET(request:Request){try{const search=new URL(request.url).searchParams.get("search")??undefined;return Response.json(application().listContacts(await webContext(),search))}catch(error){return apiError(error)}}

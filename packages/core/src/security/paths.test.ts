@@ -1,0 +1,2 @@
+import{describe,expect,it}from"vitest";import{resolveInside,safeFilename,safePathComponent}from"./paths.js";
+describe("safe storage paths",()=>{it("sanitizes names and filenames",()=>{expect(safeFilename("Voice note / July","md")).toBe("voice-note-july.md");expect(safePathComponent("user/../../secret")).not.toContain("/")});it("keeps resolved paths under their root",()=>expect(resolveInside("/tmp/data","../secret")).toMatch(/^\/tmp\/data\//))});
