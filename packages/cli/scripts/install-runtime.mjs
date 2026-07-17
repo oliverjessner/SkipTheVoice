@@ -21,7 +21,7 @@ function isWorkspaceInstall() {
   if (!existsSync(manifestPath)) return false;
   try {
     const manifest = JSON.parse(readFileSync(manifestPath, "utf8"));
-    return manifest.name === "skipthevoice" && Array.isArray(manifest.workspaces);
+    return manifest.name === "skipthevoice-monorepo" && Array.isArray(manifest.workspaces);
   } catch {
     return false;
   }

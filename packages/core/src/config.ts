@@ -44,7 +44,7 @@ function findProjectRoot(startDirectory: string): string | undefined {
     if (existsSync(packagePath)) {
       try {
         const manifest = JSON.parse(readFileSync(packagePath, "utf8")) as { name?: string; workspaces?: unknown };
-        if (manifest.name === "skipthevoice" && manifest.workspaces) return directory;
+        if (manifest.name === "skipthevoice-monorepo" && manifest.workspaces) return directory;
       } catch {
         // Continue searching for the workspace root when a parent manifest is unreadable.
       }

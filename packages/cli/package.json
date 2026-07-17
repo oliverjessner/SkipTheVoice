@@ -1,5 +1,5 @@
 {
-  "name": "@skipthevoice/cli",
+  "name": "skipthevoice",
   "version": "0.1.0",
   "description": "Read WhatsApp voice messages as text with a local Whisper runtime",
   "type": "module",

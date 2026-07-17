@@ -23,7 +23,7 @@ if (!skipChecks) {
   run("npm", ["run", "lint"]);
   run("npm", ["run", "typecheck"]);
 }
-run("npm", ["pack", "--dry-run", "--workspace", "@skipthevoice/cli"]);
+run("npm", ["pack", "--dry-run", "--workspace", "skipthevoice"]);
 
 if (!shouldPublish) {
   console.log("\nRelease check passed. Nothing was published. Run `npm run publish:npm -- --publish` to publish.");
@@ -31,7 +31,7 @@ if (!shouldPublish) {
 }
 
 run("npm", ["whoami"]);
-const publishArguments = ["publish", "--workspace", "@skipthevoice/cli", "--access", "public", "--tag", valueAfter("--tag") ?? "latest"];
+const publishArguments = ["publish", "--workspace", "skipthevoice", "--access", "public", "--tag", valueAfter("--tag") ?? "latest"];
 const otp = valueAfter("--otp");
 if (otp) publishArguments.push("--otp", otp);
 run("npm", publishArguments);

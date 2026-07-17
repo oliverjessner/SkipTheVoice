@@ -10,7 +10,7 @@ const manifest = JSON.parse(readFileSync(path.join(repositoryRoot, "packages", "
 const version = argumentsMap.get("--version") ?? manifest.version;
 const tap = path.resolve(repositoryRoot, argumentsMap.get("--tap") ?? "../homebrew-tap");
 const formulaPath = path.join(tap, "Formula", "skipthevoice.rb");
-const registryUrl = `https://registry.npmjs.org/@skipthevoice/cli/-/cli-${version}.tgz`;
+const registryUrl = `https://registry.npmjs.org/skipthevoice/-/skipthevoice-${version}.tgz`;
 
 if (!existsSync(formulaPath)) throw new Error(`Homebrew formula not found: ${formulaPath}`);
 
@@ -34,4 +34,4 @@ const formula = readFileSync(formulaPath, "utf8")
   .replace(/^  url ".*"$/m, `  url "${registryUrl}"`)
   .replace(/^  sha256 ".*"$/m, `  sha256 "${sha256}"`);
 writeFileSync(formulaPath, formula);
-console.log(`Updated ${formulaPath} to @skipthevoice/cli ${version} (${sha256}).`);
+console.log(`Updated ${formulaPath} to skipthevoice ${version} (${sha256}).`);

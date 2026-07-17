@@ -1,5 +1,5 @@
 {
-    "name": "skipthevoice",
+    "name": "skipthevoice-monorepo",
     "version": "0.1.0",
     "type": "module",
     "workspaces": [
@@ -10,12 +10,12 @@
         "node": ">=22.0.0"
     },
     "scripts": {
-        "postinstall": "npm run build -w @skipthevoice/core",
+        "postinstall": "npm run build -w @skipthevoice/core && npm run build -w skipthevoice",
         "dev": "concurrently -k -n web,runner,whisper 'npm run dev:web' 'npm run dev:worker' 'npm run dev:whisper'",
         "dev:web": "npm run dev -w @skipthevoice/web",
         "dev:worker": "tsx packages/core/src/transcription/runner-entry.ts",
         "dev:whisper": ".venv/bin/python -m uvicorn app.main:app --app-dir apps/whisper-worker --host 0.0.0.0 --port 8090",
-        "build": "npm run build -w @skipthevoice/core && npm run build -w @skipthevoice/cli && npm run build -w @skipthevoice/web",
+        "build": "npm run build -w @skipthevoice/core && npm run build -w skipthevoice && npm run build -w @skipthevoice/web",
         "start": "npm run start -w @skipthevoice/web",
         "start:worker": "node packages/core/dist/transcription/runner-entry.js",
         "worker": "tsx packages/core/src/transcription/runner-entry.ts",
@@ -31,7 +31,7 @@
         "db:backup": "npm run cli -- db backup",
         "whisper:install": "python3.12 -m venv .venv && .venv/bin/python -m pip install -r apps/whisper-worker/requirements.txt",
         "whisper:test": "PYTHONPATH=apps/whisper-worker .venv/bin/python -m pytest apps/whisper-worker/app/tests",
-        "pack:cli": "npm pack -w @skipthevoice/cli",
+        "pack:cli": "npm pack -w skipthevoice",
         "publish:npm": "node scripts/publish-npm.mjs",
         "release:brew": "node scripts/update-homebrew-formula.mjs"
     },

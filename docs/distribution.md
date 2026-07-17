@@ -1,10 +1,10 @@
 # Distribution
 
-SkipTheVoice ships as the public npm package `@skipthevoice/cli` and as the Homebrew formula `skipthevoice` in `oliverjessner/homebrew-tap`. Both distributions are standalone CLI installations and do not require Docker or the Next.js application.
+SkipTheVoice ships as the public npm package `skipthevoice` and as the Homebrew formula `skipthevoice` in `oliverjessner/homebrew-tap`. Both distributions are standalone CLI installations and do not require Docker or the Next.js application.
 
 ## npm release
 
-Log in once with an npm account that can publish the `@skipthevoice` scope:
+Log in once with the npm account that publishes the unscoped `skipthevoice` package:
 
 ```bash
 npm login
@@ -46,7 +46,7 @@ The formula installs Node.js, FFmpeg, OpenAI Whisper, the small HTTP worker depe
 
 ```bash
 npm run pack:cli
-npm install --global ./skipthevoice-cli-0.1.0.tgz
+npm install --global ./skipthevoice-0.1.0.tgz
 skipthevoice --help
 ```
 

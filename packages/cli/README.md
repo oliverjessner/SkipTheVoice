@@ -12,7 +12,7 @@ brew install skipthevoice
 or:
 
 ```bash
-npm install --global @skipthevoice/cli
+npm install --global skipthevoice
 ```
 
 Homebrew installs every runtime dependency. The npm build requires Node.js 22+ and Python 3.11–3.14; it includes FFmpeg/ffprobe binaries and prepares the local Python environment when the first transcription is requested. Docker and a separately started Whisper service are not required.

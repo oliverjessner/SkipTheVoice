@@ -14,7 +14,7 @@ brew install skipthevoice
 Alternatively, install from npm. Node.js 22+ and Python 3.11–3.14 must already be available; the npm package supplies its media tools and installs the Python packages on the first transcription:
 
 ```bash
-npm install --global @skipthevoice/cli
+npm install --global skipthevoice
 skipthevoice --help
 ```
 
@@ -45,6 +45,8 @@ cp .env.example .env
 npm install
 npm run whisper:install
 ```
+
+The workspace installation also builds and links the CLI, so `npx skipthevoice --help` works immediately after `npm install`.
 
 Relative database and storage paths are resolved from the repository root for both workspace processes and the CLI. Set `SKIPTHEVOICE_PROJECT_ROOT` only when embedding the packages in a non-standard layout.
 
