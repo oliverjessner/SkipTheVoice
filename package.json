@@ -16,7 +16,7 @@
         "dev:web": "npm run dev -w @skipthevoice/web",
         "dev:worker": "tsx packages/core/src/transcription/runner-entry.ts",
         "dev:whisper": ".venv/bin/python -m uvicorn app.main:app --app-dir apps/whisper-worker --host 0.0.0.0 --port 8090",
-        "build": "npm run build -w @skipthevoice/core && npm run build -w skipthevoice && npm run build -w @skipthevoice/web",
+        "build": "npm run build -w @skipthevoice/core && npm run build -w skipthevoice",
         "start": "npm run start -w @skipthevoice/web",
         "start:worker": "node packages/core/dist/transcription/runner-entry.js",
         "worker": "tsx packages/core/src/transcription/runner-entry.ts",

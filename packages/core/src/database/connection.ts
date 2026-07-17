@@ -25,7 +25,7 @@ export function closeDatabase(): void { singleton?.sqlite.close(); singleton = u
 
 export function initializeDatabaseSchema(sqlite: SqliteDatabase = getDatabase().sqlite): void {
   const currentDir = path.dirname(fileURLToPath(import.meta.url));
-  const candidates = [path.join(currentDir, "schema.sql"), path.join(currentDir, "database", "schema.sql"), path.resolve("packages/core/src/database/schema.sql")];
+  const candidates = [process.env.SKIPTHEVOICE_SCHEMA_PATH, path.join(currentDir, "schema.sql"), path.join(currentDir, "database", "schema.sql"), path.resolve("packages/core/src/database/schema.sql")].filter((candidate): candidate is string => Boolean(candidate));
   const schemaPath = candidates.find((candidate) => { try { readFileSync(candidate); return true; } catch { return false; } });
   if (!schemaPath) throw new Error("Database bootstrap schema was not found.");
   sqlite.exec(readFileSync(schemaPath, "utf8"));

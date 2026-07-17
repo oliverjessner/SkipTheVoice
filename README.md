@@ -2,7 +2,7 @@
 
 SkipTheVoice is a local-first, SaaS-ready web application and CLI that imports only received WhatsApp push-to-talk voice messages and transcribes them with a self-hosted OpenAI Whisper worker. It deliberately ignores normal text, non-PTT audio, images, videos, documents, reactions, and every other chat type.
 
-## Install the CLI
+## Install SkipTheVoice
 
 Homebrew installs Node.js, FFmpeg, Python, OpenAI Whisper, and SkipTheVoice in one step:
 
@@ -15,10 +15,12 @@ Alternatively, install from npm. Node.js 22+ and Python 3.11–3.14 must already
 
 ```bash
 npm install --global skipthevoice
-skipthevoice --help
+skipthevoice
 ```
 
-Neither installation uses Docker. CLI data is stored per user in `~/Library/Application Support/SkipTheVoice` on macOS, `%LOCALAPPDATA%\SkipTheVoice` on Windows, and `${XDG_DATA_HOME:-~/.local/share}/skipthevoice` on Linux. Whisper model files are downloaded by Whisper on first use and then cached locally.
+Running `skipthevoice` starts the local UI at `http://localhost:3000`, opens it in the default browser, and keeps the web server and transcription services running until `Ctrl+C` is pressed. Add a subcommand such as `skipthevoice conversations` or use `skipthevoice --help` for the command-line interface.
+
+Neither installation uses Docker. Application data is stored per user in `~/Library/Application Support/SkipTheVoice` on macOS, `%LOCALAPPDATA%\SkipTheVoice` on Windows, and `${XDG_DATA_HOME:-~/.local/share}/skipthevoice` on Linux. Whisper model files are downloaded by Whisper on first use and then cached locally.
 
 ## Architecture
 

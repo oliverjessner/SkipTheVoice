@@ -1,6 +1,6 @@
-# SkipTheVoice CLI
+# SkipTheVoice
 
-Read WhatsApp voice messages as text from the same local database used by the web application.
+Read WhatsApp voice messages as text in a local web UI or from the command line.
 
 ## Installation
 
@@ -16,6 +16,14 @@ npm install --global skipthevoice
 ```
 
 Homebrew installs every runtime dependency. The npm build requires Node.js 22+ and Python 3.11–3.14; it includes FFmpeg/ffprobe binaries and prepares the local Python environment when the first transcription is requested. Docker and a separately started Whisper service are not required.
+
+Start SkipTheVoice without a subcommand to launch the local UI and open it in the default browser:
+
+```bash
+skipthevoice
+```
+
+The UI runs at `http://localhost:3000` and remains active while the command is running. Press `Ctrl+C` to stop the UI and its local transcription services. All commands with a subcommand continue to use the CLI:
 
 ```bash
 skipthevoice conversations

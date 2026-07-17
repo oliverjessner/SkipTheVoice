@@ -9,6 +9,7 @@ import qrcode from "qrcode-terminal";
 import { SkipTheVoiceApplication, JobRunner, SelfHostedWhisperProvider, databaseStatus, getConfig, getDatabase, initializeConfig, maskSecret, publicError, seedDatabase, safeFilename } from "@skipthevoice/core";
 import { runConversations } from "./conversations.js";
 import { configurePackagedMediaTools } from "./runtime.js";
+import { launchUi } from "./ui.js";
 
 type Globals={json?:boolean;quiet?:boolean;verbose?:boolean;userId?:string;config?:string};
 const program=new Command(); let app:SkipTheVoiceApplication; let globals:Globals={};
@@ -24,6 +25,7 @@ const rootHelp=`SkipTheVoice
 Read WhatsApp voice messages as text.
 
 Usage:
+  skipthevoice                     Start the local UI
   skipthevoice conversations
   skipthevoice conversations <conversation>
   skipthevoice conversations <conversation> <message>
@@ -45,6 +47,7 @@ program.name("skipthevoice").description("Read WhatsApp voice messages as text."
   .option("--json","Print machine-readable JSON or newline-delimited JSON events.").option("--quiet","Suppress non-essential output.")
   .option("--verbose","Print additional diagnostics without secrets.").option("--user-id <user-id>","Select a local development user.").option("--config <path>","Load another configuration file.")
   .hook("preAction",(_,command)=>{ globals=optionValue(command);configurePackagedMediaTools(); initializeConfig(globals.config); app=new SkipTheVoiceApplication(); });
+program.action(()=>launchUi(app));
 program.helpInformation=()=>rootHelp;
 
 const connections=program.command("connections").description("Manage messenger connections.");

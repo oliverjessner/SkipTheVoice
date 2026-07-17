@@ -215,7 +215,7 @@ export default function AudiosClient() {
     <h1 className="page-title">Audios</h1>
     <p className="lede">Only received push-to-talk voice messages appear here.</p>
     {error && <div className="error" role="alert">{error} <button className="button" onClick={() => { void loadConversations(); void loadAudios(); }}>Retry</button></div>}
-    {transcriptionUnavailable && <div className="error" role="status">Transcription services are unavailable. Start SkipTheVoice with <code>npm run dev</code>. Queued jobs will resume automatically.</div>}
+    {transcriptionUnavailable && <div className="error" role="status">Transcription services are unavailable. Restart SkipTheVoice. Queued jobs will resume automatically.</div>}
     <div className="panel audio-grid">
       <section className="conversation-pane" aria-label="Conversations">
         <label className="field">

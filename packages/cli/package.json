@@ -1,12 +1,12 @@
 {
   "name": "skipthevoice",
   "version": "0.1.0",
-  "description": "Read WhatsApp voice messages as text with a local Whisper runtime",
+  "description": "Run the local SkipTheVoice UI and CLI with a bundled Whisper runtime",
   "type": "module",
   "bin": { "skipthevoice": "dist/index.js" },
   "files": ["dist", "scripts/install-runtime.mjs", "README.md"],
   "scripts": {
-    "build": "tsup --config tsup.config.ts && cp ../core/src/database/schema.sql dist/schema.sql && node scripts/copy-worker.mjs",
+    "build": "npm run build -w @skipthevoice/web && tsup --config tsup.config.ts && cp ../core/src/database/schema.sql dist/schema.sql && node scripts/copy-worker.mjs && node scripts/copy-web.mjs",
     "prepack": "npm run build",
     "runtime:check": "node scripts/install-runtime.mjs --check",
     "runtime:install": "node scripts/install-runtime.mjs"
@@ -23,8 +23,11 @@
     "commander": "15.0.0",
     "drizzle-orm": "0.45.2",
     "file-type": "21.3.4",
+    "next": "16.2.10",
     "pino": "9.7.0",
     "qrcode-terminal": "0.12.0",
+    "react": "19.2.7",
+    "react-dom": "19.2.7",
     "zod": "4.0.14"
   },
   "optionalDependencies": {
