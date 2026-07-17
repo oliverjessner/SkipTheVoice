@@ -33,6 +33,11 @@ function replaceExternalAliases(directory) {
       if (!packageName) throw new Error(`Could not determine the external package for ${entryPath}.`);
       rmSync(entryPath);
       mkdirSync(entryPath);
+      if (packageName === "@whiskeysockets/baileys") {
+        writeFileSync(path.join(entryPath, "package.json"), `${JSON.stringify({ type: "module", main: "index.js", exports: "./index.js" })}\n`);
+        writeFileSync(path.join(entryPath, "index.js"), `export * from ${JSON.stringify(packageName)};\nexport { default } from ${JSON.stringify(packageName)};\n`);
+        continue;
+      }
       writeFileSync(path.join(entryPath, "package.json"), `${JSON.stringify({ type: "commonjs", main: "index.cjs" })}\n`);
       writeFileSync(path.join(entryPath, "index.cjs"), `module.exports = require(${JSON.stringify(packageName)});\n`);
       continue;

@@ -46,7 +46,7 @@ The formula installs Node.js, FFmpeg, OpenAI Whisper, the small HTTP worker depe
 
 ```bash
 npm run pack:cli
-npm install --global ./skipthevoice-0.1.1.tgz
+npm install --global ./skipthevoice-0.1.2.tgz
 skipthevoice
 skipthevoice --help
 ```

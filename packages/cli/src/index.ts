@@ -43,7 +43,7 @@ Options:
   --version             Show the installed version
 `;
 
-program.name("skipthevoice").description("Read WhatsApp voice messages as text.").version("0.1.1").exitOverride()
+program.name("skipthevoice").description("Read WhatsApp voice messages as text.").version("0.1.2").exitOverride()
   .option("--json","Print machine-readable JSON or newline-delimited JSON events.").option("--quiet","Suppress non-essential output.")
   .option("--verbose","Print additional diagnostics without secrets.").option("--user-id <user-id>","Select a local development user.").option("--config <path>","Load another configuration file.")
   .hook("preAction",(_,command)=>{ globals=optionValue(command);configurePackagedMediaTools(); initializeConfig(globals.config); app=new SkipTheVoiceApplication(); });
