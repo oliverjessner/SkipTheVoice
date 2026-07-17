@@ -2,6 +2,20 @@
 
 SkipTheVoice is a local-first, SaaS-ready web application and CLI that imports only received WhatsApp push-to-talk voice messages and transcribes them with a self-hosted OpenAI Whisper worker. It deliberately ignores normal text, non-PTT audio, images, videos, documents, reactions, and every other chat type.
 
+## Preview
+
+### Web app
+
+Browse received voice messages, play the original audio, and work with local transcripts in the browser.
+
+![SkipTheVoice web app showing voice messages and transcripts](apps/assets/mockups/webapp.webp)
+
+### CLI
+
+Access the same conversations and transcripts directly from the terminal.
+
+![SkipTheVoice CLI showing a voice-message transcript](apps/assets/mockups/cli.webp)
+
 ## Install SkipTheVoice
 
 Homebrew installs Node.js, FFmpeg, Python, OpenAI Whisper, and SkipTheVoice in one step:
