@@ -1,6 +1,6 @@
 {
   "name": "skipthevoice",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "Run the local SkipTheVoice UI and CLI with a bundled Whisper runtime",
   "type": "module",
   "bin": { "skipthevoice": "dist/index.js" },

@@ -28,7 +28,13 @@ For npm accounts using one-time passwords:
 npm run publish:npm -- --publish --otp 123456
 ```
 
-After publication, the script downloads the registry tarball, calculates its SHA-256, and updates `../homebrew-tap/Formula/skipthevoice.rb`. The tap change remains local so it can be reviewed, committed, and pushed separately.
+After publication, the script downloads the registry tarball, calculates its SHA-256, and updates the registered `oliverjessner/tap` checkout reported by `brew --repo oliverjessner/tap`. It then runs Homebrew style and audit checks, reinstalls and tests the formula, commits the formula update, and pushes the tap. The tap must be clean and pushable before the npm package is published.
+
+Use `--skip-brew-install` only when the formula has already been installed and tested on another release machine:
+
+```bash
+npm run publish:npm -- --publish --skip-brew-install
+```
 
 ## Homebrew release
 
@@ -36,8 +42,8 @@ To update the formula independently after an npm publication:
 
 ```bash
 npm run release:brew
-brew style ../homebrew-tap/Formula/skipthevoice.rb
-brew audit --strict ../homebrew-tap/Formula/skipthevoice.rb
+brew style "$(brew --repo oliverjessner/tap)/Formula/skipthevoice.rb"
+brew audit --strict oliverjessner/tap/skipthevoice
 ```
 
 The formula installs Node.js, FFmpeg, OpenAI Whisper, the small HTTP worker dependencies, and the CLI. Its wrapper points SkipTheVoice at Homebrew-managed binaries, so it does not create another user-managed Python environment.
@@ -46,7 +52,7 @@ The formula installs Node.js, FFmpeg, OpenAI Whisper, the small HTTP worker depe
 
 ```bash
 npm run pack:cli
-npm install --global ./skipthevoice-0.1.2.tgz
+npm install --global ./skipthevoice-0.1.3.tgz
 skipthevoice
 skipthevoice --help
 ```
