@@ -45,9 +45,14 @@ export class Repositories {
   listContacts(context: ApplicationContext, search?: string) {
     return this.sqlite.prepare(`SELECT c.id,c.display_name AS displayName,c.phone_number AS phoneNumber,c.avatar_url AS avatarUrl,c.connection_id AS connectionId,COUNT(v.id) AS voiceMessageCount,MAX(v.sent_at) AS latestVoiceMessageAt FROM contacts c JOIN voice_messages v ON v.contact_id=c.id AND v.user_id=c.user_id WHERE c.user_id=? AND c.display_name LIKE ? GROUP BY c.id ORDER BY latestVoiceMessageAt DESC`).all(context.userId, `%${search ?? ""}%`);
   }
-  listVoiceMessages(context: ApplicationContext, filters: { conversationId?: string; contactId?: string; connectionId?: string; status?: string; limit?: number; offset?: number; oldestFirst?: boolean } = {}) {
+  listVoiceMessages(context: ApplicationContext, filters: { conversationId?: string; contactId?: string; connectionId?: string; status?: string; search?: string; limit?: number; offset?: number; oldestFirst?: boolean } = {}) {
     const clauses = ["v.user_id = ?"], values: unknown[] = [context.userId];
     for (const [key, column] of [["conversationId","v.conversation_id"],["contactId","v.contact_id"],["connectionId","v.connection_id"],["status","v.transcription_status"]] as const) if (filters[key]) { clauses.push(`${column} = ?`); values.push(filters[key]); }
+    if (filters.search?.trim()) {
+      const pattern = `%${filters.search.trim().replaceAll("\\", "\\\\").replaceAll("%", "\\%").replaceAll("_", "\\_")}%`;
+      clauses.push("(COALESCE(t.text, '') LIKE ? ESCAPE '\\' OR COALESCE(j.partial_text, '') LIKE ? ESCAPE '\\' OR COALESCE(n.name, '') LIKE ? ESCAPE '\\' OR v.sender_display_name LIKE ? ESCAPE '\\')");
+      values.push(pattern, pattern, pattern, pattern);
+    }
     values.push(Math.min(filters.limit ?? 20, 100), filters.offset ?? 0);
     return this.sqlite.prepare(`SELECT v.id,n.name, v.sender_display_name AS senderName,contact.avatar_url AS senderAvatarUrl,v.sent_at AS sentAt,v.duration_seconds AS durationSeconds,v.mime_type AS mimeType,v.file_size AS fileSize,v.download_status AS downloadStatus,v.transcription_status AS transcriptionStatus,v.conversation_id AS conversationId,c.display_name AS conversationName,t.text AS transcript,t.detected_language AS detectedLanguage,j.id AS jobId,j.status AS jobStatus,j.progress_phase AS progressPhase,j.progress_percent AS progressPercent,j.estimated_remaining_seconds AS estimatedRemainingSeconds,j.elapsed_milliseconds AS elapsedMilliseconds,j.partial_text AS partialText FROM voice_messages v JOIN conversations c ON c.id=v.conversation_id LEFT JOIN voice_message_names n ON n.voice_message_id=v.id AND n.user_id=v.user_id LEFT JOIN contacts contact ON contact.id=v.contact_id LEFT JOIN transcription_jobs j ON j.id=(SELECT j2.id FROM transcription_jobs j2 WHERE j2.voice_message_id=v.id ORDER BY j2.created_at DESC LIMIT 1) LEFT JOIN transcriptions t ON t.id=(SELECT t2.id FROM transcriptions t2 WHERE t2.voice_message_id=v.id ORDER BY t2.created_at DESC LIMIT 1) WHERE ${clauses.join(" AND ")} ORDER BY v.sent_at ${filters.oldestFirst ? "ASC" : "DESC"} LIMIT ? OFFSET ?`).all(...values);
   }

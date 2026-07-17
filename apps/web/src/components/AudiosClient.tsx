@@ -1,6 +1,6 @@
 "use client";
 
-import { type FormEvent, useCallback, useEffect, useMemo, useState } from "react";
+import { type FormEvent, useCallback, useDeferredValue, useEffect, useMemo, useState } from "react";
 import { Progress } from "./Progress";
 
 interface Conversation {
@@ -76,7 +76,8 @@ export default function AudiosClient() {
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [selected, setSelected] = useState("");
   const [audios, setAudios] = useState<AudioRecord[]>([]);
-  const [search, setSearch] = useState("");
+  const [conversationSearch, setConversationSearch] = useState("");
+  const [transcriptSearch, setTranscriptSearch] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
   const [serviceHealth, setServiceHealth] = useState<ServiceHealth>();
@@ -84,10 +85,11 @@ export default function AudiosClient() {
   const [nameDraft, setNameDraft] = useState("");
   const [savingNameId, setSavingNameId] = useState<string>();
   const [copiedTranscriptId, setCopiedTranscriptId] = useState<string>();
+  const deferredTranscriptSearch = useDeferredValue(transcriptSearch.trim());
 
   const loadConversations = useCallback(async () => {
     try {
-      const rows = await request(`/api/conversations?search=${encodeURIComponent(search)}`) as Conversation[];
+      const rows = await request(`/api/conversations?search=${encodeURIComponent(conversationSearch)}`) as Conversation[];
       setConversations(rows);
       setSelected((value) => value || rows[0]?.id || "");
     } catch (caught) {
@@ -95,16 +97,18 @@ export default function AudiosClient() {
     } finally {
       setLoading(false);
     }
-  }, [search]);
+  }, [conversationSearch]);
 
   const loadAudios = useCallback(async () => {
     if (!selected) return;
     try {
-      setAudios(await request(`/api/audios?conversationId=${encodeURIComponent(selected)}`) as AudioRecord[]);
+      const params = new URLSearchParams({ conversationId: selected });
+      if (deferredTranscriptSearch) params.set("search", deferredTranscriptSearch);
+      setAudios(await request(`/api/audios?${params}`) as AudioRecord[]);
     } catch (caught) {
       setError((caught as Error).message);
     }
-  }, [selected]);
+  }, [selected, deferredTranscriptSearch]);
 
   const loadServiceHealth = useCallback(async () => {
     try {
@@ -220,7 +224,7 @@ export default function AudiosClient() {
       <section className="conversation-pane" aria-label="Conversations">
         <label className="field">
           <span className="sr-only">Search conversations</span>
-          <input className="search" type="search" placeholder="Search conversations" value={search} onChange={(event) => setSearch(event.target.value)} />
+          <input className="search" type="search" placeholder="Search conversations" value={conversationSearch} onChange={(event) => setConversationSearch(event.target.value)} />
         </label>
         {loading
           ? <div className="empty">Loading voice messages…</div>
@@ -237,19 +241,28 @@ export default function AudiosClient() {
             </li>)}</ul>}
       </section>
       <section className="detail-pane" aria-label="Voice messages">
+        {selected && <div className="transcript-search">
+          <label className="field">
+            <span className="sr-only">Transkripte, Titel oder Absender durchsuchen</span>
+            <input
+              className="search"
+              type="search"
+              placeholder="Transkripte durchsuchen"
+              value={transcriptSearch}
+              onChange={(event) => setTranscriptSearch(event.target.value)}
+            />
+          </label>
+          {deferredTranscriptSearch && <span className="search-result-count" aria-live="polite">
+            {audios.length} Treffer
+          </span>}
+        </div>}
         {!selected
           ? <div className="empty">Select a conversation to view its voice messages.</div>
           : audios.length === 0
-            ? <div className="empty">No voice messages found</div>
+            ? <div className="empty">{deferredTranscriptSearch ? "Keine passenden Transkripte gefunden" : "No voice messages found"}</div>
             : <ul className="voice-list">{audios.map((audio) => <li className="voice-card" key={audio.id}>
               <header className="voice-card-header">
-                <div className="sender">
-                  <Avatar name={audio.senderName} url={audio.senderAvatarUrl} />
-                  <div className="sender-copy">
-                    <strong>{audio.senderName}</strong>
-                    <div className="meta"><time dateTime={audio.sentAt}>{new Date(audio.sentAt).toLocaleString("de-DE")}</time> · {durationLabel(audio.durationSeconds)}</div>
-                  </div>
-                </div>
+                <div className="meta voice-card-meta"><time dateTime={audio.sentAt}>{new Date(audio.sentAt).toLocaleString("de-DE")}</time> · {durationLabel(audio.durationSeconds)}</div>
                 <span className="status voice-status" data-status={audio.transcriptionStatus}>{statusLabel(audio.transcriptionStatus)}</span>
               </header>
               <div className="voice-card-player">

@@ -43,6 +43,21 @@ describe("SQLite repositories", () => {
     expect(() => repositories.setVoiceMessageName({ userId: "two" }, "vm", "Not allowed")).toThrow(/access/);
   });
 
+  it("searches voice messages by transcript, partial text, title, and sender", () => {
+    const timestamp = now();
+    const job = new TranscriptionService(repositories).start({ userId: "one" }, "vm");
+    database.sqlite.prepare("UPDATE transcription_jobs SET partial_text=? WHERE id=?").run("Zwischenstand über Bananen", job.id);
+    database.sqlite.prepare(`INSERT INTO transcriptions(id,user_id,voice_message_id,transcription_job_id,provider,model,detected_language,text,duration_milliseconds,audio_duration_seconds,created_at,updated_at)
+      VALUES(?,?,?,?,?,?,?,?,?,?,?,?)`).run("transcript", "one", "vm", job.id, "self_hosted_whisper", "tiny", "de", "Das geheime Projekt startet morgen.", 100, 2, timestamp, timestamp);
+    repositories.setVoiceMessageName({ userId: "one" }, "vm", "Wochenplanung");
+
+    for (const search of ["GEHEIME", "Bananen", "Wochenplanung", "test contact"]) {
+      expect(repositories.listVoiceMessages({ userId: "one" }, { search })).toEqual([expect.objectContaining({ id: "vm" })]);
+    }
+    expect(repositories.listVoiceMessages({ userId: "one" }, { search: "nicht vorhanden" })).toEqual([]);
+    expect(repositories.listVoiceMessages({ userId: "one" }, { search: "%" })).toEqual([]);
+  });
+
   it("maps model loading progress to the persisted preparing status", () => {
     const service = new TranscriptionService(repositories);
     const job = service.start({ userId: "one" }, "vm");
