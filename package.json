@@ -10,6 +10,7 @@
         "node": ">=22.0.0"
     },
     "scripts": {
+        "prepublishOnly": "node -e \"console.error('Refusing to publish the monorepo root. Use: npm run publish:npm -- --publish'); process.exit(1)\"",
         "postinstall": "npm run build -w @skipthevoice/core && npm run build -w skipthevoice",
         "dev": "concurrently -k -n web,runner,whisper 'npm run dev:web' 'npm run dev:worker' 'npm run dev:whisper'",
         "dev:web": "npm run dev -w @skipthevoice/web",
