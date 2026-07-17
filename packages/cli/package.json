@@ -1,38 +1,62 @@
 {
-  "name": "skipthevoice",
-  "version": "0.1.3",
-  "description": "Run the local SkipTheVoice UI and CLI with a bundled Whisper runtime",
-  "type": "module",
-  "bin": { "skipthevoice": "dist/index.js" },
-  "files": ["dist", "scripts/install-runtime.mjs", "README.md"],
-  "scripts": {
-    "build": "npm run build -w @skipthevoice/web && tsup --config tsup.config.ts && cp ../core/src/database/schema.sql dist/schema.sql && node scripts/copy-worker.mjs && node scripts/copy-web.mjs",
-    "prepack": "npm run build",
-    "runtime:check": "node scripts/install-runtime.mjs --check",
-    "runtime:install": "node scripts/install-runtime.mjs"
-  },
-  "engines": { "node": ">=22.0.0" },
-  "keywords": ["whatsapp", "voice-message", "transcription", "whisper", "cli"],
-  "homepage": "https://github.com/oliverjessner/SkipTheVoice#readme",
-  "repository": { "type": "git", "url": "git+https://github.com/oliverjessner/SkipTheVoice.git" },
-  "bugs": { "url": "https://github.com/oliverjessner/SkipTheVoice/issues" },
-  "publishConfig": { "access": "public" },
-  "dependencies": {
-    "@whiskeysockets/baileys": "7.0.0-rc13",
-    "better-sqlite3": "12.11.1",
-    "commander": "15.0.0",
-    "drizzle-orm": "0.45.2",
-    "file-type": "21.3.4",
-    "next": "16.2.10",
-    "pino": "9.7.0",
-    "qrcode-terminal": "0.12.0",
-    "react": "19.2.7",
-    "react-dom": "19.2.7",
-    "zod": "4.0.14"
-  },
-  "optionalDependencies": {
-    "@ffmpeg-installer/ffmpeg": "1.1.0",
-    "@ffprobe-installer/ffprobe": "2.1.2"
-  },
-  "devDependencies": { "@types/qrcode-terminal": "0.12.2", "tsup": "8.5.0" }
+    "name": "skipthevoice",
+    "version": "0.2.0",
+    "description": "Run the local SkipTheVoice UI and CLI with a bundled Whisper runtime",
+    "type": "module",
+    "bin": {
+        "skipthevoice": "dist/index.js"
+    },
+    "files": [
+        "dist",
+        "scripts/install-runtime.mjs",
+        "README.md"
+    ],
+    "scripts": {
+        "build": "npm run build -w @skipthevoice/web && tsup --config tsup.config.ts && cp ../core/src/database/schema.sql dist/schema.sql && node scripts/copy-worker.mjs && node scripts/copy-web.mjs",
+        "prepack": "npm run build",
+        "runtime:check": "node scripts/install-runtime.mjs --check",
+        "runtime:install": "node scripts/install-runtime.mjs"
+    },
+    "engines": {
+        "node": ">=22.0.0"
+    },
+    "keywords": [
+        "whatsapp",
+        "voice-message",
+        "transcription",
+        "whisper",
+        "cli"
+    ],
+    "homepage": "https://github.com/oliverjessner/SkipTheVoice#readme",
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/oliverjessner/SkipTheVoice.git"
+    },
+    "bugs": {
+        "url": "https://github.com/oliverjessner/SkipTheVoice/issues"
+    },
+    "publishConfig": {
+        "access": "public"
+    },
+    "dependencies": {
+        "@whiskeysockets/baileys": "7.0.0-rc13",
+        "better-sqlite3": "12.11.1",
+        "commander": "15.0.0",
+        "drizzle-orm": "0.45.2",
+        "file-type": "21.3.4",
+        "next": "16.2.10",
+        "pino": "9.7.0",
+        "qrcode-terminal": "0.12.0",
+        "react": "19.2.7",
+        "react-dom": "19.2.7",
+        "zod": "4.0.14"
+    },
+    "optionalDependencies": {
+        "@ffmpeg-installer/ffmpeg": "1.1.0",
+        "@ffprobe-installer/ffprobe": "2.1.2"
+    },
+    "devDependencies": {
+        "@types/qrcode-terminal": "0.12.2",
+        "tsup": "8.5.0"
+    }
 }
