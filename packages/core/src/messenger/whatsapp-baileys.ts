@@ -4,10 +4,12 @@ import makeWASocket, {
   Browsers,
   DisconnectReason,
   downloadMediaMessage,
+  fetchLatestWaWebVersion,
   normalizeMessageContent,
   useMultiFileAuthState,
   type Chat,
   type Contact,
+  type WAVersion,
   type WAMessage,
   type WASocket,
 } from "@whiskeysockets/baileys";
@@ -28,6 +30,23 @@ import type {
 } from "./types.js";
 
 interface AuthView { qr?: string; pairingCode?: string; updatedAt: string }
+
+const waWebVersionCacheLifetimeMs = 6 * 60 * 60 * 1_000;
+let waWebVersionCache: { version: WAVersion; expiresAt: number } | undefined;
+let waWebVersionRequest: Promise<WAVersion> | undefined;
+
+async function currentWaWebVersion(): Promise<WAVersion> {
+  if (waWebVersionCache && waWebVersionCache.expiresAt > Date.now()) return waWebVersionCache.version;
+  if (waWebVersionRequest) return waWebVersionRequest;
+  waWebVersionRequest = fetchLatestWaWebVersion({ signal: AbortSignal.timeout(10_000) })
+    .then(({ version, isLatest, error }) => {
+      if (!isLatest) logger.warn({ error: error instanceof Error ? error.message : "Version lookup failed" }, "Using the bundled WhatsApp Web version");
+      waWebVersionCache = { version, expiresAt: Date.now() + (isLatest ? waWebVersionCacheLifetimeMs : 60_000) };
+      return version;
+    })
+    .finally(() => { waWebVersionRequest = undefined; });
+  return waWebVersionRequest;
+}
 
 function nonEmpty(value: string | null | undefined): string | undefined {
   const trimmed = value?.trim();
@@ -228,8 +247,9 @@ export class WhatsAppBaileysProvider implements MessengerProvider {
     const credentialsPath = this.credentialsPath(context.userId, connectionId);
     mkdirSync(credentialsPath, { recursive: true, mode: 0o700 });
     const { state, saveCreds } = await useMultiFileAuthState(credentialsPath);
+    const version = await currentWaWebVersion();
     this.repositories.updateConnection(context, connectionId, { status: "connecting", lastErrorCode: null, lastErrorMessage: null });
-    const socket = makeWASocket({ auth: state, browser: Browsers.ubuntu("SkipTheVoice"), markOnlineOnConnect: false, syncFullHistory: true, generateHighQualityLinkPreview: false, logger: logger.child({ component: "baileys" }) as any });
+    const socket = makeWASocket({ auth: state, version, browser: Browsers.ubuntu("SkipTheVoice"), markOnlineOnConnect: false, syncFullHistory: true, generateHighQualityLinkPreview: false, logger: logger.child({ component: "baileys" }) as any });
     this.sockets.set(connectionId, socket);
     const connectionTimeout = setTimeout(() => {
       if (this.sockets.get(connectionId) !== socket) return;
