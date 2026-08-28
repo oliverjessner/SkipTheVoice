@@ -46,4 +46,5 @@ function replaceExternalAliases(directory) {
   }
 }
 
-replaceExternalAliases(path.join(destinationRoot, ".next", "node_modules"));
+const externalAliasesRoot = path.join(destinationRoot, ".next", "node_modules");
+if (existsSync(externalAliasesRoot)) replaceExternalAliases(externalAliasesRoot);

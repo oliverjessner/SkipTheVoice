@@ -42,6 +42,8 @@ if (rootManifest.version !== packageManifest.version) {
   throw new Error(`Version mismatch: package.json is ${rootManifest.version}, packages/cli/package.json is ${packageManifest.version}.`);
 }
 
+run("npm", ["ls", "--workspace", "skipthevoice", "--workspace", "@skipthevoice/web", "--depth", "0"]);
+
 if (!skipChecks) {
   run("npm", ["test"]);
   run("npm", ["run", "lint"]);
