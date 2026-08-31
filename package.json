@@ -9,6 +9,15 @@
     "engines": {
         "node": ">=22.0.0"
     },
+    "author": {
+        "name": "oliverjessner",
+        "url": "https://oliverjessner.at"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/oliverjessner/SkipTheVoice/"
+    },
+    "homepage": "https://oliverjessner.at/skipthevoice",
     "scripts": {
         "prepublishOnly": "node -e \"console.error('Refusing to publish the monorepo root. Use: npm run publish:npm -- --publish'); process.exit(1)\"",
         "postinstall": "npm run build -w @skipthevoice/core && npm run build -w skipthevoice",
