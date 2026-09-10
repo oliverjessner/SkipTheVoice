@@ -55,7 +55,7 @@
         "tsx": "4.20.3",
         "typescript": "5.9.2",
         "typescript-eslint": "8.64.0",
-        "vitest": "4.1.10"
+        "vitest": "4.1.11"
     },
     "overrides": {
         "postcss": "8.5.10",
