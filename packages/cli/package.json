@@ -49,7 +49,7 @@
         "qrcode-terminal": "0.12.0",
         "react": "19.2.7",
         "react-dom": "19.2.7",
-        "zod": "4.0.14"
+        "zod": "4.6.6"
     },
     "optionalDependencies": {
         "@ffmpeg-installer/ffmpeg": "1.1.0",
